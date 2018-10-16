@@ -1,0 +1,72 @@
+version: '3.5'
+
+services:
+
+  db:
+    container_name: ${DOCKER_PROJECT_NAME}-mariadb
+    image: mariadb:10.3.10-bionic
+    restart: always
+    volumes:
+    - db-data:/var/lib/mysql:rw
+    # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+    # - ./docker/db/data:/var/lib/mysql:rw
+    - ${DOCKER_COMPOSE_DIR}/provisioning/dev/mariadb/entrypoint:/docker-entrypoint-initdb.d:ro,cached
+    environment:
+      MYSQL_ROOT_PASSWORD: "!ChangeMe!"
+      MYSQL_DATABASE: api
+      MYSQL_USER: api-platform
+      # You should definitely change the password in production
+      MYSQL_PASSWORD: "!ChangeMe!"
+    networks:
+      backend:
+        ipv4_address: ${DOCKER_SUBNET_PREFIX}.2
+        aliases:
+        - mariadb
+
+  adminer:
+    container_name: ${DOCKER_PROJECT_NAME}-adminer
+    image: adminer
+    restart: always
+    depends_on:
+    - db
+    networks:
+      backend:
+        ipv4_address: ${DOCKER_SUBNET_PREFIX}.6
+        aliases:
+        - adminer
+
+  php:
+    container_name: ${DOCKER_PROJECT_NAME}-php
+    build: ${DOCKER_COMPOSE_DIR}/provisioning/dev/php/
+    depends_on:
+    - db
+    volumes:
+    - ${DOCKER_COMPOSE_DIR}/:/srv/api
+    networks:
+      backend:
+        ipv4_address: ${DOCKER_SUBNET_PREFIX}.3
+        aliases:
+        - php
+
+  web:
+    container_name: ${DOCKER_PROJECT_NAME}-nginx
+    build: ${DOCKER_COMPOSE_DIR}/provisioning/dev/nginx/
+    depends_on:
+    - php
+    volumes:
+    - ${DOCKER_COMPOSE_DIR}/public:/srv/api/public
+    networks:
+      backend:
+        ipv4_address: ${DOCKER_SUBNET_PREFIX}.4
+        aliases:
+        - nginx
+
+volumes:
+  db-data: {}
+
+networks:
+  backend:
+    name: ${DOCKER_PROJECT_NAME}-backend
+    ipam:
+      config:
+      - subnet: ${DOCKER_SUBNET_PREFIX}.0/16

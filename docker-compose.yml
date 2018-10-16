@@ -35,6 +35,34 @@ services:
         aliases:
         - adminer
 
+  mongo:
+    container_name: ${DOCKER_PROJECT_NAME}-mongo
+    image: mongo:3.6
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: "!ChangeMe!"
+    networks:
+      backend:
+        ipv4_address: ${DOCKER_SUBNET_PREFIX}.3
+        aliases:
+        - mongo
+
+  mongo-express:
+    container_name: ${DOCKER_PROJECT_NAME}-mongo-express
+    image: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: "!ChangeMe!"
+    depends_on:
+      - mongo
+    networks:
+      backend:
+        ipv4_address: ${DOCKER_SUBNET_PREFIX}.7
+        aliases:
+        - mongo-express
+
   php:
     container_name: ${DOCKER_PROJECT_NAME}-php
     build: ${DOCKER_COMPOSE_DIR}/provisioning/dev/php/
@@ -44,7 +72,7 @@ services:
     - ${DOCKER_COMPOSE_DIR}/:/srv/api
     networks:
       backend:
-        ipv4_address: ${DOCKER_SUBNET_PREFIX}.3
+        ipv4_address: ${DOCKER_SUBNET_PREFIX}.4
         aliases:
         - php
 
@@ -57,7 +85,7 @@ services:
     - ${DOCKER_COMPOSE_DIR}/public:/srv/api/public
     networks:
       backend:
-        ipv4_address: ${DOCKER_SUBNET_PREFIX}.4
+        ipv4_address: ${DOCKER_SUBNET_PREFIX}.5
         aliases:
         - nginx
 

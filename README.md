@@ -18,11 +18,17 @@ $ docker-compose up
 ## API
 
 ```
-http://172.65.0.4/api
+http://172.67.0.5/api
 ```
 
 ## Adminer
 
 ```
-http://172.65.0.6:8080/?server=db&username=api-platform&db=api
+http://172.67.0.6:8080/?server=db&username=api-platform&db=api
+```
+
+## Mongo Express
+
+```
+http://172.67.0.7:8081/
 ```
